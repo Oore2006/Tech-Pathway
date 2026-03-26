@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tech Path Discovery - Nigeria</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .option-card.selected { border-color: #2563eb; background-color: #eff6ff; }
+    </style>
+</head>
+<body class="bg-slate-50 min-h-screen pb-12">
+
+    <!-- Header -->
+    <header class="bg-blue-600 text-white py-12 px-4 text-center shadow-lg mb-8">
+        <h1 class="text-3xl md:text-4xl font-bold mb-2">Find Your Tech Career Path</h1>
+        <p class="text-blue-100 max-w-2xl mx-auto">A personalized assessment to help you navigate the Nigerian tech ecosystem based on your natural strengths.</p>
+    </header>
+
+    <main class="max-w-3xl mx-auto px-4">
+        <div id="quiz-container" class="bg-white rounded-2xl shadow-sm p-6 md:p-10 border border-slate-200">
+            
+            <!-- Progress Bar -->
+            <div class="mb-8">
+                <div class="flex justify-between text-sm text-slate-500 mb-2">
+                    <span id="step-indicator">Section 1 of 6</span>
+                    <span id="progress-percent">0%</span>
+                </div>
+                <div class="w-full bg-slate-100 h-2 rounded-full">
+                    <div id="progress-bar" class="bg-blue-600 h-2 rounded-full transition-all duration-300" style="width: 16%"></div>
+                </div>
+            </div>
+
+            <!-- Quiz Sections -->
+            <div id="quiz-content">
+                <!-- Content will be injected by JS -->
+            </div>
+
+            <!-- Navigation -->
+            <div class="mt-10 flex justify-between items-center">
+                <button id="prev-btn" class="hidden px-6 py-2 text-slate-600 font-medium hover:text-blue-600 transition-colors">
+                    Back
+                </button>
+                <button id="next-btn" class="ml-auto bg-blue-600 text-white px-8 py-3 rounded-xl font-semibold hover:bg-blue-700 shadow-md transition-all active:scale-95">
+                    Next Section
+                </button>
+            </div>
+        </div>
+
+        <!-- Results Screen (Hidden by default) -->
+        <div id="results-container" class="hidden bg-white rounded-2xl shadow-xl p-8 md:p-12 border border-slate-200 text-center">
+            <div class="mb-6 inline-flex p-4 bg-green-100 text-green-600 rounded-full">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+            </div>
+            <h2 class="text-3xl font-bold text-slate-800 mb-2">Your Recommended Path:</h2>
+            <div id="path-title" class="text-4xl font-black text-blue-600 mb-4 uppercase tracking-tight">Software Developer</div>
+            <p id="path-desc" class="text-slate-600 text-lg mb-8 max-w-lg mx-auto">You have a strong logical foundation and the patience required for building complex systems.</p>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-left mb-8">
+                <div class="p-4 bg-slate-50 rounded-lg">
+                    <h4 class="font-bold text-slate-700 mb-1">Key Strengths</h4>
+                    <p id="res-strengths" class="text-sm text-slate-500">Logic, Structure, Patience</p>
+                </div>
+                <div class="p-4 bg-slate-50 rounded-lg">
+                    <h4 class="font-bold text-slate-700 mb-1">Learning Focus</h4>
+                    <p id="res-focus" class="text-sm text-slate-500">Backend, Web Dev, Mobile Apps</p>
+                </div>
+            </div>
+
+            <div id="environment-feedback" class="p-4 border-l-4 border-yellow-400 bg-yellow-50 text-left mb-8">
+                <h4 class="font-bold text-yellow-800 text-sm uppercase">Nigerian Reality Check</h4>
+                <p id="env-text" class="text-yellow-700 text-sm"></p>
+            </div>
+
+            <button onclick="location.reload()" class="text-blue-600 font-semibold hover:underline">Retake Assessment</button>
+        </div>
+    </main>
+
+    <script>
+        const sections = [
+            {
+                title: "Problem Solving Style",
+                questions: [
+                    { id: "s1q1", type: "choice", text: "When something breaks, what do you do first?", options: [
+                        { label: "Understand how it works", val: "A" },
+                        { label: "Look for a video tutorial", val: "B" },
+                        { label: "Ask someone", val: "C" },
+                        { label: "Experiment randomly", val: "D" }
+                    ]},
+                    { id: "s1q2", type: "choice", text: "Which feels more satisfying?", options: [
+                        { label: "Solving a puzzle", val: "A" },
+                        { label: "Designing something visually", val: "B" },
+                        { label: "Fixing a device", val: "C" },
+                        { label: "Explaining ideas", val: "D" }
+                    ]},
+                    { id: "s1q3", type: "scale", text: "Do you enjoy math problems?", min: 1, max: 5 },
+                    { id: "s1q4", type: "scale", text: "Do you like step-by-step instructions?", min: 1, max: 5 }
+                ]
+            },
+            {
+                title: "Attention & Patience",
+                questions: [
+                    { id: "s2q1", type: "choice", text: "Can you focus for 2–3 hours on one task?", options: [
+                        { label: "Yes", val: "Y" },
+                        { label: "No", val: "N" }
+                    ]},
+                    { id: "s2q2", type: "scale", text: "Do you enjoy debugging/troubleshooting for a long time?", min: 1, max: 5 },
+                    { id: "s2q3", type: "scale", text: "Do you get bored easily when learning theory?", min: 1, max: 5, inverse: true }
+                ]
+            },
+            {
+                title: "Creativity vs Structure",
+                questions: [
+                    { id: "s3q1", type: "choice", text: "Which sounds more fun?", options: [
+                        { label: "Designing an app interface", val: "B" },
+                        { label: "Writing code logic", val: "A" },
+                        { label: "Analyzing numbers", val: "E" },
+                        { label: "Fixing computers", val: "C" }
+                    ]},
+                    { id: "s3q2", type: "scale", text: "Do you notice colors, fonts, and layouts easily?", min: 1, max: 5 },
+                    { id: "s3q3", type: "choice", text: "Would you rather:", options: [
+                        { label: "Build something functional", val: "A" },
+                        { label: "Make something beautiful", val: "B" },
+                        { label: "Organize information", val: "E" },
+                        { label: "Secure systems", val: "C" }
+                    ]}
+                ]
+            },
+            {
+                title: "Social vs Solo",
+                questions: [
+                    { id: "s4q1", type: "choice", text: "Do you like explaining tech to others?", options: [
+                        { label: "Yes", val: "D" },
+                        { label: "No", val: "A" }
+                    ]},
+                    { id: "s4q2", type: "choice", text: "Preferred work style:", options: [
+                        { label: "Working Alone", val: "A" },
+                        { label: "In a Team", val: "D" }
+                    ]},
+                    { id: "s4q3", type: "choice", text: "Would you enjoy teaching tech?", options: [
+                        { label: "Yes", val: "D" },
+                        { label: "No", val: "A" }
+                    ]}
+                ]
+            },
+            {
+                title: "Curiosity Type",
+                questions: [
+                    { id: "s5q1", type: "choice", text: "Which YouTube content attracts you most?", options: [
+                        { label: "Coding Tutorials", val: "A" },
+                        { label: "Design Videos", val: "B" },
+                        { label: "Gadget Repairs", val: "C" },
+                        { label: "Business/Startups", val: "D" },
+                        { label: "AI & Data Science", val: "E" }
+                    ]},
+                    { id: "s5q2", type: "choice", text: "What would you try first on a new laptop?", options: [
+                        { label: "Build a website", val: "A" },
+                        { label: "Design graphics", val: "B" },
+                        { label: "Install/Optimize software", val: "C" },
+                        { label: "Hack/Secure systems", val: "C" },
+                        { label: "Analyze data", val: "E" }
+                    ]}
+                ]
+            },
+            {
+                title: "Nigerian Reality Check",
+                questions: [
+                    { id: "s6q1", type: "choice", text: "Do you have a personal laptop?", options: [{label:"Yes", val:"y"}, {label:"No", val:"n"}]},
+                    { id: "s6q2", type: "choice", text: "Daily electricity hours?", options: [{label:"0-4", val:"low"}, {label:"5-10", val:"mid"}, {label:"11+", val:"high"}]},
+                    { id: "s6q3", type: "choice", text: "Internet access consistency?", options: [{label:"Poor/Expensive", val:"low"}, {label:"Reliable/Reasonable", val:"high"}]},
+                    { id: "s6q4", type: "choice", text: "Available learning time per day?", options: [{label:"< 2 hours", val:"low"}, {label:"3-5 hours", val:"mid"}, {label:"> 6 hours", val:"high"}]}
+                ]
+            }
+        ];
+
+        let currentStep = 0;
+        const answers = {};
+
+        const quizContent = document.getElementById('quiz-content');
+        const nextBtn = document.getElementById('next-btn');
+        const prevBtn = document.getElementById('prev-btn');
+        const stepIndicator = document.getElementById('step-indicator');
+        const progressPercent = document.getElementById('progress-percent');
+        const progressBar = document.getElementById('progress-bar');
+
+        function renderStep() {
+            const section = sections[currentStep];
+            stepIndicator.innerText = `Section ${currentStep + 1} of ${sections.length}`;
+            const percent = Math.round(((currentStep + 1) / sections.length) * 100);
+            progressPercent.innerText = `${percent}%`;
+            progressBar.style.width = `${percent}%`;
+
+            let html = `<h2 class="text-2xl font-bold text-slate-800 mb-6">${section.title}</h2>`;
+            
+            section.questions.forEach(q => {
+                html += `<div class="mb-8">
+                    <p class="font-medium text-slate-700 mb-4">${q.text}</p>`;
+                
+                if (q.type === 'choice') {
+                    html += `<div class="grid grid-cols-1 sm:grid-cols-2 gap-3">`;
+                    q.options.forEach(opt => {
+                        const isSelected = answers[q.id] === opt.val;
+                        html += `
+                            <button onclick="selectChoice('${q.id}', '${opt.val}')" 
+                                class="option-card p-4 border-2 rounded-xl text-left transition-all hover:border-blue-400 ${isSelected ? 'border-blue-600 bg-blue-50' : 'border-slate-100 bg-white'}">
+                                ${opt.label}
+                            </button>`;
+                    });
+                    html += `</div>`;
+                } else if (q.type === 'scale') {
+                    html += `<div class="flex items-center gap-4">
+                        <span class="text-xs text-slate-400">Low</span>
+                        <div class="flex flex-1 justify-between gap-2">`;
+                    for(let i=1; i<=5; i++) {
+                        const isSelected = answers[q.id] == i;
+                        html += `
+                            <button onclick="selectChoice('${q.id}', ${i})" 
+                                class="flex-1 h-12 border-2 rounded-lg flex items-center justify-center transition-all ${isSelected ? 'border-blue-600 bg-blue-600 text-white' : 'border-slate-100 hover:border-blue-300'}">
+                                ${i}
+                            </button>`;
+                    }
+                    html += `</div><span class="text-xs text-slate-400">High</span></div>`;
+                }
+                html += `</div>`;
+            });
+
+            quizContent.innerHTML = html;
+            prevBtn.classList.toggle('hidden', currentStep === 0);
+            nextBtn.innerText = currentStep === sections.length - 1 ? 'Finish' : 'Next Section';
+        }
+
+        window.selectChoice = (qId, val) => {
+            answers[qId] = val;
+            renderStep();
+        };
+
+        nextBtn.onclick = () => {
+            // Basic validation: ensure all questions in section are answered
+            const currentSectionQuestions = sections[currentStep].questions;
+            const allAnswered = currentSectionQuestions.every(q => answers[q.id] !== undefined);
+            
+            if (!allAnswered) {
+                alert("Please answer all questions in this section.");
+                return;
+            }
+
+            if (currentStep < sections.length - 1) {
+                currentStep++;
+                renderStep();
+            } else {
+                showResults();
+            }
+        };
+
+        prevBtn.onclick = () => {
+            if (currentStep > 0) {
+                currentStep--;
+                renderStep();
+            }
+        };
+
+        function showResults() {
+            document.getElementById('quiz-container').classList.add('hidden');
+            document.getElementById('results-container').classList.remove('hidden');
+
+            const tallies = { A: 0, B: 0, C: 0, D: 0, E: 0 };
+            Object.values(answers).forEach(v => {
+                if (tallies[v] !== undefined) tallies[v]++;
+            });
+
+            // Find max tally
+            let best = 'A';
+            for (let k in tallies) {
+                if (tallies[k] > tallies[best]) best = k;
+            }
+
+            const paths = {
+                A: { 
+                    title: "Software Developer", 
+                    desc: "You have a natural aptitude for logic and problem-solving. You enjoy understanding how things work from the inside out.",
+                    strengths: "Logic, Persistence, Structure",
+                    focus: "Web Dev (React/Node), Mobile (Flutter), Backend (Python/Go)"
+                },
+                B: { 
+                    title: "UI/UX Designer", 
+                    desc: "You have a sharp eye for aesthetics and user experience. You value how a product looks and feels as much as how it works.",
+                    strengths: "Visual Creativity, Empathy, Layout",
+                    focus: "Figma, Adobe XD, Design Systems, Frontend Dev"
+                },
+                C: { 
+                    title: "Hardware / IT Support / Cyber", 
+                    desc: "You are hands-on and practical. You enjoy securing systems and fixing physical devices.",
+                    strengths: "Practicality, Troubleshooting, Vigilance",
+                    focus: "Networking, CCNA, Cybersecurity, PC Repairs"
+                },
+                D: { 
+                    title: "Product Manager / Tech Trainer", 
+                    desc: "You are excellent at communicating technical concepts and leading people towards a goal.",
+                    strengths: "Communication, Organization, Leadership",
+                    focus: "Product Management, Technical Writing, Developer Advocacy"
+                },
+                E: { 
+                    title: "Data Scientist / AI Engineer", 
+                    desc: "You love numbers and finding hidden patterns in information. You are naturally analytical and detail-oriented.",
+                    strengths: "Analytics, Math, Curiosity",
+                    focus: "Data Analysis, Python, SQL, Machine Learning"
+                }
+            };
+
+            const result = paths[best];
+            document.getElementById('path-title').innerText = result.title;
+            document.getElementById('path-desc').innerText = result.desc;
+            document.getElementById('res-strengths').innerText = result.strengths;
+            document.getElementById('res-focus').innerText = result.focus;
+
+            // Environmental Reality
+            let envText = "";
+            if (answers.s6q1 === 'n') envText += "• No laptop? Consider using a cyber cafe or learning 'no-code' concepts on mobile while you save. ";
+            if (answers.s6q2 === 'low') envText += "• Power is low: Invest in a strong power bank for your laptop or find a co-working space with a generator. ";
+            if (answers.s6q4 === 'low') envText += "• Limited time: Focus on one skill at a time. Consistency beats intensity in tech.";
+            if (!envText) envText = "Your environment is well-suited for intensive learning! Take advantage of your consistent power and time.";
+            
+            document.getElementById('env-text').innerText = envText;
+        }
+
+        renderStep();
+    </script>
+</body>
+</html>
